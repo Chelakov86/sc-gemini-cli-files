@@ -43,3 +43,9 @@ stage managers.
 ## 6. Post-Event
 *   **Feedback:** Send a survey within 24 hours while the experience is fresh. Keep it short.
 *   **Content:** Upload slides and recordings as fast as possible (ideally within a week).
+
+## 7. New Strategic Additions (2026 Best Practices)
+*   **Hybrid/Virtual Strategy:** Don't just upload slides later. Plan for a high-quality livestream of the main stage or a specific digital experience for remote attendees.
+*   **Sustainability:** Adopt a sustainability policy. Consider digital-only swag bags and zero-waste food planning to align with modern expectations.
+*   **Sponsorship Integration:** Move beyond simple booths. Create tiered sponsorship packages that include sponsored workshops or dedicated "demo" tracks.
+*   **Emerging Tech Content:** Specifically target high-interest topics for 2026, such as Generative AI and Cybersecurity.
