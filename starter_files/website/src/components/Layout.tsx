@@ -9,7 +9,8 @@ import {
   loadCatalog, 
   loadSponsors, 
   loadRegistration, 
-  loadTravelAndHotels 
+  loadTravelAndHotels,
+  loadSocials
 } from '../lazyLoad';
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -155,19 +156,54 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         {children}
       </main>
 
-      <footer className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <BrainCircuit className="h-6 w-6 text-slate-400" />
-              <span className="text-slate-500 font-semibold">TechStack Conference</span>
-            </div>
-            <p className="text-slate-400 text-sm">
-              © 2026 Fictitious AI Conference. All rights reserved.
-            </p>
+            <footer className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
+
+              <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+
+                  <div className="flex items-center gap-2">
+
+                    <BrainCircuit className="h-6 w-6 text-slate-400" />
+
+                    <span className="text-slate-500 font-semibold">TechStack Conference</span>
+
+                  </div>
+
+                  <div className="flex items-center gap-6">
+
+                    <Link 
+
+                      to="/socials" 
+
+                      onMouseEnter={() => loadSocials()}
+
+                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-sm font-medium transition-colors"
+
+                    >
+
+                      Social Kit
+
+                    </Link>
+
+                    <p className="text-slate-400 text-sm">
+
+                      © 2026 Fictitious AI Conference. All rights reserved.
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </footer>
+
           </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
+
+        );
+
+      };
+
+      
