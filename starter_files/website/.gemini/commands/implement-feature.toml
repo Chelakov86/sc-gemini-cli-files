@@ -1,11 +1,48 @@
 description = "Analyzes a GitHub Issue and implements a feature/bug fix."
 prompt = """
-Help me implement the feature or fix the bug described in GitHub Issue {{args}}
+Help me implement the feature or fix the bug described in a GitHub Issue
 as a senior engineer would.
 
 Here are the details from GitHub:
 
-!{gh issue view {{args}}}
+Implement comprehensive "Session Catalog" page at /catalog that displays all conference sessions as interactive tiles and provides robust filtering functionality.
+
+Objective:
+Enhance the user experience by allowing attendees to easily browse, search, and filter sessions based on various criteria.
+
+Data Source:
+The conference-website/src/data/sessions.ts file should be kept in sync with the content of schedule.md. Utilize the SESSIONS array exported from conference-website/src/data/sessions.ts as the primary data source for all session information displayed on the catalog page.
+
+Functional Requirements:
+Session Display:
+ 
+Each session should be displayed as a visually distinct and interactive tile on the /catalog page.
+Each tile should minimally show: title, speaker, time, day, category, and location.
+Clicking on a session tile should navigate the user to a SessionDetail page (e.g., /catalog/:sessionId) displaying all available details for that session.
+Filtering & Search:
+
+Implement filter controls on the /catalog page. Attendees should be able to filter sessions by:
+Day: Day 1, Day 2, Day 3
+Category: Breakout, Customer Story, Learning Lab, Keynote, Expo
+Speaker: A searchable/selectable list of all unique speakers.
+Level: Beginner, Intermediate, Advanced (from session.details.level)
+Tracks: A searchable/selectable list of all unique tracks (from session.details.tracks)
+Add a general search bar that filters sessions based on keywords found in the title, description, speaker, or fullDescription.
+Filters should be combinable (e.g., "Day 1" AND "Keynote").
+The URL should reflect the active filters (e.g., /catalog?day=Day1&category=Keynote).
+Technical Considerations:
+Component Structure: Modify conference-website/src/pages/Catalog.tsx to display session tiles and integrate filter controls. You may need to create new sub-components for individual session tiles and filter groups.
+State Management: Manage the filtered sessions and active filter states efficiently. Consider using React Hooks (useState, useEffect, useMemo) for local state or a global state solution if deemed necessary by existing project patterns.
+Styling: Maintain consistency with the existing Tailwind CSS and conference-website component styling. Ensure responsiveness across different screen sizes.
+Performance: Optimize rendering for a potentially large number of sessions to ensure a smooth user experience.
+Routing: Ensure react-router-dom is correctly configured for the /catalog and /catalog/:sessionId routes.
+Acceptance Criteria:
+All sessions from sessions.ts are displayed correctly on the /catalog page.
+All specified filter options are present and functional.
+Searching by text effectively narrows down the session list.
+Navigating to a session's detail page works as expected, displaying all relevant information.
+The UI is responsive and adheres to the project's design language.
+Existing unit tests for Catalog.test.tsx and SessionDetail.test.tsx (if any) are updated, and new tests are added to cover the filtering logic and UI interactions.
 
 **Goal:** Implement the requested feature or fix the bug safely and correctly.
 

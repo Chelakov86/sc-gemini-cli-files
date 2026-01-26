@@ -1,30 +1,96 @@
-import { useState, useMemo } from 'react';
-import { Search, Filter, Calendar, MapPin, Clock, ArrowRight, User } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, Filter, Calendar, MapPin, Clock, ArrowRight, User, Users, Activity, Tags, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { SESSIONS, type Session } from '../data/sessions';
+import { MultiSelectDropdown } from '../components/MultiSelectDropdown';
+import { UNIQUE_SPEAKERS, UNIQUE_TRACKS, LEVELS } from '../data/sessionFilters';
+import { parseArrayParam } from '../utils/urlState';
 
 export const Catalog = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDay, setSelectedDay] = useState<string>('All');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize state from URL
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [selectedDay, setSelectedDay] = useState(searchParams.get('day') || 'All');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All');
+  const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(
+    parseArrayParam(searchParams.get('speakers'))
+  );
+  const [selectedLevel, setSelectedLevel] = useState(searchParams.get('level') || 'All');
+  const [selectedTracks, setSelectedTracks] = useState<string[]>(
+    parseArrayParam(searchParams.get('tracks'))
+  );
+
+  // Debounce search input
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Sync state to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (selectedDay !== 'All') params.set('day', selectedDay);
+    if (selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (selectedSpeakers.length > 0) {
+      params.set('speakers', selectedSpeakers.map(encodeURIComponent).join(','));
+    }
+    if (selectedLevel !== 'All') params.set('level', selectedLevel);
+    if (selectedTracks.length > 0) {
+      params.set('tracks', selectedTracks.map(encodeURIComponent).join(','));
+    }
+    setSearchParams(params, { replace: true });
+  }, [searchQuery, selectedDay, selectedCategory, selectedSpeakers, selectedLevel, selectedTracks, setSearchParams]);
 
   const days = ['All', 'Day 1', 'Day 2', 'Day 3'];
   const categories = ['All', 'Keynote', 'Breakout', 'Customer Story', 'Learning Lab', 'Expo'];
 
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchInput('');
+    setSearchQuery('');
+    setSelectedDay('All');
+    setSelectedCategory('All');
+    setSelectedSpeakers([]);
+    setSelectedLevel('All');
+    setSelectedTracks([]);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery || selectedDay !== 'All' || selectedCategory !== 'All' ||
+    selectedSpeakers.length > 0 || selectedLevel !== 'All' || selectedTracks.length > 0;
+
   const filteredSessions = useMemo<Session[]>(() => {
     return SESSIONS.filter(session => {
-      const matchesSearch = 
+      // Search: expanded to include fullDescription
+      const matchesSearch =
         session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         session.speaker.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
+        session.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.details.fullDescription.toLowerCase().includes(searchQuery.toLowerCase());
+
       const matchesDay = selectedDay === 'All' || session.day === selectedDay;
       const matchesCategory = selectedCategory === 'All' || session.category === selectedCategory;
 
-      return matchesSearch && matchesDay && matchesCategory;
+      // Speaker filter (OR logic)
+      const matchesSpeaker = selectedSpeakers.length === 0 ||
+        selectedSpeakers.includes(session.speaker);
+
+      // Level filter
+      const matchesLevel = selectedLevel === 'All' ||
+        session.details.level === selectedLevel;
+
+      // Tracks filter (OR logic: match if session has ANY selected track)
+      const matchesTracks = selectedTracks.length === 0 ||
+        session.details.tracks.some(track => selectedTracks.includes(track));
+
+      return matchesSearch && matchesDay && matchesCategory &&
+             matchesSpeaker && matchesLevel && matchesTracks;
     });
-  }, [searchQuery, selectedDay, selectedCategory]);
+  }, [searchQuery, selectedDay, selectedCategory, selectedSpeakers, selectedLevel, selectedTracks]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12">
@@ -49,8 +115,8 @@ export const Catalog = () => {
                 type="text"
                 placeholder="Search sessions, speakers, or topics..."
                 className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
             </div>
 
@@ -89,11 +155,56 @@ export const Catalog = () => {
               </div>
             </div>
           </div>
-          
+
+          {/* Row 2: Advanced Filters */}
+          <div className="flex flex-col lg:flex-row gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <MultiSelectDropdown
+              options={UNIQUE_SPEAKERS}
+              selected={selectedSpeakers}
+              onChange={setSelectedSpeakers}
+              placeholder="All Speakers"
+              icon={Users}
+              searchPlaceholder="Search speakers..."
+            />
+
+            <div className="relative min-w-[160px]">
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(e.target.value)}
+                className="block w-full pl-3 pr-10 py-3 text-base border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white appearance-none cursor-pointer"
+              >
+                {LEVELS.map(level => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                <Activity className="h-4 w-4" />
+              </div>
+            </div>
+
+            <MultiSelectDropdown
+              options={UNIQUE_TRACKS}
+              selected={selectedTracks}
+              onChange={setSelectedTracks}
+              placeholder="All Tracks"
+              icon={Tags}
+              searchPlaceholder="Search tracks..."
+            />
+          </div>
+
           <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Showing {filteredSessions.length} sessions
             </p>
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Clear all filters
+              </button>
+            )}
           </div>
         </div>
 
