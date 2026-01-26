@@ -1,0 +1,10 @@
+[project]
+name = "gemini-cli-transcription"
+version = "0.1.0"
+description = "Transcription tools for Gemini CLI project"
+requires-python = ">=3.9"
+dependencies = [
+    "openai-whisper>=20231117",
+    "torch>=2.0.0",
+    "tqdm>=4.65.0",
+]
