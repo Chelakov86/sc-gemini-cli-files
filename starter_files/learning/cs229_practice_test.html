@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS229 Interactive Practice Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .question-header {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            background: #fff;
+            transition: all 0.2s;
+        }
+        .option-btn:hover {
+            border-color: #0d6efd;
+            background: #f8f9fa;
+        }
+        .option-btn.correct {
+            background-color: #d1e7dd;
+            border-color: #a3cfbb;
+            color: #0f5132;
+        }
+        .option-btn.wrong {
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+            color: #842029;
+        }
+        .explanation {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fff3cd;
+            border: 1px solid #ffe69c;
+            color: #664d03;
+        }
+        .progress-bar-container {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #0d6efd;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .chapter-tag {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c757d;
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="quiz-container">
+        <div class="progress-bar-container">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        
+        <div id="quiz-content">
+            <span class="chapter-tag" id="chapter-label">Chapter 1</span>
+            <h3 class="question-header" id="question-text">Loading question...</h3>
+            
+            <div id="options-container">
+                <!-- Options will be injected here -->
+            </div>
+
+            <div class="explanation" id="explanation-box">
+                <strong>Explanation:</strong> <span id="explanation-text"></span>
+            </div>
+
+            <button class="btn btn-primary mt-4" id="next-btn" style="display: none;">Next Question</button>
+        </div>
+
+        <div id="result-screen" style="display: none; text-align: center;">
+            <h2>Test Complete!</h2>
+            <p class="lead" id="score-text"></p>
+            <button class="btn btn-success" onclick="location.reload()">Restart Quiz</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            chapter: "Chapter 1: Linear Regression",
+            question: "In Linear Regression, what is the closed-form solution for the parameter vector θ that minimizes the least-squares cost function?",
+            options: [
+                "θ = (X^T X) X^T y",
+                "θ = (X^T X)^{-1} X^T y",
+                "θ = X^T (X X^T)^{-1} y",
+                "θ = X (X^T X)^{-1} y"
+            ],
+            correct: 1,
+            explanation: "The Normal Equations provide the closed-form solution θ = (X^T X)^{-1} X^T y, assuming the matrix X^T X is invertible."
+        },
+        {
+            chapter: "Chapter 2: Classification",
+            question: "Which optimization algorithm is characterized by quadratic convergence and requires the computation of the Hessian matrix?",
+            options: [
+                "Stochastic Gradient Descent",
+                "Batch Gradient Descent",
+                "Newton's Method",
+                "Perceptron Learning Algorithm"
+            ],
+            correct: 2,
+            explanation: "Newton's Method (or Newton-Raphson) uses the Hessian matrix to achieve quadratic convergence, reaching the optimum in fewer iterations than gradient descent."
+        },
+        {
+            chapter: "Chapter 3: GLMs",
+            question: "In the context of Generalized Linear Models, what is the 'canonical link function' for the Bernoulli distribution?",
+            options: [
+                "The Identity function",
+                "The Exponential function",
+                "The Logit function",
+                "The Probit function"
+            ],
+            correct: 2,
+            explanation: "For the Bernoulli distribution, the natural parameter η is log(φ/(1-φ)), which is the logit function. The inverse (the response function) is the sigmoid function."
+        },
+        {
+            chapter: "Chapter 4: Generative Learning",
+            question: "What is the key assumption made by the Naive Bayes classifier?",
+            options: [
+                "Features are linearly independent.",
+                "Features are conditionally independent given the class label.",
+                "The features follow a Gaussian distribution.",
+                "The class priors are uniform."
+            ],
+            correct: 1,
+            explanation: "Naive Bayes assumes that features are conditionally independent of each other given the class label y."
+        },
+        {
+            chapter: "Chapter 5: Kernel Methods",
+            question: "According to Mercer's Theorem, what property must a function K satisfy to be a valid kernel?",
+            options: [
+                "It must be a linear function.",
+                "The corresponding kernel matrix must be symmetric positive semi-definite.",
+                "It must be differentiable everywhere.",
+                "It must map inputs to a finite-dimensional space."
+            ],
+            correct: 1,
+            explanation: "Mercer's Theorem states that a function is a valid kernel if and only if for any finite set of points, the kernel matrix is symmetric and positive semi-definite."
+        },
+        {
+            chapter: "Chapter 6: Support Vector Machines",
+            question: "In SVMs, which points are known as 'support vectors'?",
+            options: [
+                "All points in the training set.",
+                "Points that are correctly classified with a margin greater than 1.",
+                "Points that lie exactly on the margins (functional margin = 1).",
+                "The centroids of each class."
+            ],
+            correct: 2,
+            explanation: "Support vectors are the training examples that lie closest to the decision boundary and have a functional margin of exactly 1 (or less than 1 if regularized)."
+        },
+        {
+            chapter: "Chapter 7: Deep Learning",
+            question: "What is the primary function of 'Backpropagation' in neural networks?",
+            options: [
+                "To initialize the weights of the network.",
+                "To compute the activations of the hidden layers.",
+                "To efficiently compute the gradient of the loss function with respect to all parameters.",
+                "To normalize the input data."
+            ],
+            correct: 2,
+            explanation: "Backpropagation is an efficient application of the chain rule to compute gradients for all parameters in a neural network, moving from the output back to the input."
+        },
+        {
+            chapter: "Chapter 8: Generalization",
+            question: "What does the VC (Vapnik-Chervonenkis) dimension measure?",
+            options: [
+                "The number of layers in a neural network.",
+                "The number of features in the dataset.",
+                "The complexity or capacity of a hypothesis class by the largest set of points it can shatter.",
+                "The speed of convergence of an optimizer."
+            ],
+            correct: 2,
+            explanation: "The VC dimension measures the capacity of a hypothesis class; it is the size of the largest set of points that the class can shatter (realize all possible labelings)."
+        },
+        {
+            chapter: "Chapter 9: Regularization",
+            question: "How does L1 regularization (LASSO) differ from L2 regularization (Weight Decay)?",
+            options: [
+                "L1 increases the weights, while L2 decreases them.",
+                "L1 is computationally cheaper than L2.",
+                "L1 encourages sparsity (many weights become zero), while L2 tends to shrink all weights uniformly.",
+                "L1 is only used for classification, L2 only for regression."
+            ],
+            correct: 2,
+            explanation: "L1 regularization uses the absolute sum of weights, which encourages sparsity (feature selection), whereas L2 uses the squared sum, shrinking weights towards zero without making them exactly zero."
+        },
+        {
+            chapter: "Chapter 10: k-means",
+            question: "Is the k-means clustering algorithm guaranteed to find the global minimum of the distortion function?",
+            options: [
+                "Yes, always.",
+                "No, it is coordinate descent on a non-convex function and can get stuck in local optima.",
+                "Yes, provided the data is normalized.",
+                "No, it only works for spherical clusters."
+            ],
+            correct: 1,
+            explanation: "k-means is coordinate descent on the distortion function J. Since J is non-convex, the algorithm may converge to a local optimum rather than the global one."
+        },
+        {
+            chapter: "Chapter 11: EM Algorithm",
+            question: "What is the 'Evidence Lower Bound' (ELBO)?",
+            options: [
+                "A lower bound on the generalization error.",
+                "A lower bound on the log-likelihood of the observed data.",
+                "The minimum number of iterations for EM to converge.",
+                "The highest possible reward in a reinforcement learning task."
+            ],
+            correct: 1,
+            explanation: "In EM and Variational Inference, the ELBO is a lower bound on the log-likelihood log p(x; θ), derived using Jensen's Inequality."
+        },
+        {
+            chapter: "Chapter 12: PCA",
+            question: "What does Principal Components Analysis (PCA) maximize when projecting data onto a lower-dimensional subspace?",
+            options: [
+                "The classification accuracy.",
+                "The mean of the data.",
+                "The variance of the projected data.",
+                "The distance between class centroids."
+            ],
+            correct: 2,
+            explanation: "PCA seeks to find a lower-dimensional subspace that captures as much of the original data's variability as possible by maximizing the variance of the projected data."
+        },
+        {
+            chapter: "Chapter 13: ICA",
+            question: "Why does Independent Components Analysis (ICA) fail if the sources follow a Gaussian distribution?",
+            options: [
+                "Gaussian distributions have infinite support.",
+                "Gaussian noise is too high.",
+                "The multivariate standard normal distribution is rotationally symmetric, making the mixing matrix unrecoverable up to rotation.",
+                "The central limit theorem prevents separation."
+            ],
+            correct: 2,
+            explanation: "For Gaussian sources, the joint distribution is rotationally symmetric, which creates an ambiguity where any rotation of the mixing matrix yields the same observed distribution."
+        },
+        {
+            chapter: "Chapter 14: Foundation Models",
+            question: "In Large Language Models, what is 'in-context learning'?",
+            options: [
+                "Fine-tuning the model on a specific task.",
+                "Updating the weights of the model using new data.",
+                "The ability of the model to perform a task by being provided with examples in the prompt without weight updates.",
+                "A type of data augmentation for text."
+            ],
+            correct: 2,
+            explanation: "In-context learning allows a model to learn a task 'on the fly' by seeing a few examples in the input prompt (few-shot), without changing its underlying parameters."
+        },
+        {
+            chapter: "Chapter 15: Reinforcement Learning",
+            question: "What is the purpose of the Bellman Equation in Reinforcement Learning?",
+            options: [
+                "To compute the reward function.",
+                "To define the relationship between the value of a state and the values of its successor states.",
+                "To calculate the transition probabilities.",
+                "To normalize the discount factor."
+            ],
+            correct: 1,
+            explanation: "The Bellman Equation expresses the value of a state as the sum of the immediate reward and the discounted expected value of the next state."
+        },
+        {
+            chapter: "Chapter 16: LQR",
+            question: "Linear Quadratic Regulation (LQR) assumes which of the following?",
+            options: [
+                "Linear dynamics and binary rewards.",
+                "Non-linear dynamics and quadratic rewards.",
+                "Linear dynamics and quadratic rewards.",
+                "Discrete states and continuous actions."
+            ],
+            correct: 2,
+            explanation: "LQR is a specific case of optimal control that assumes linear state transitions and quadratic reward/cost functions."
+        },
+        {
+            chapter: "Chapter 17: Policy Gradient",
+            question: "In the REINFORCE algorithm, why is a 'baseline' typically subtracted from the cumulative reward?",
+            options: [
+                "To make the gradient calculation faster.",
+                "To ensure the rewards are always positive.",
+                "To reduce the variance of the gradient estimator without introducing bias.",
+                "To prevent the policy from becoming deterministic."
+            ],
+            correct: 2,
+            explanation: "Subtracting a baseline (like the state value function) reduces the variance of the policy gradient estimate, leading to more stable and faster training."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const explanationBox = document.getElementById('explanation-box');
+    const explanationText = document.getElementById('explanation-text');
+    const nextBtn = document.getElementById('next-btn');
+    const progressFill = document.getElementById('progress');
+    const chapterLabel = document.getElementById('chapter-label');
+    const quizContent = document.getElementById('quiz-content');
+    const resultScreen = document.getElementById('result-screen');
+    const scoreText = document.getElementById('score-text');
+
+    function loadQuestion() {
+        answered = false;
+        const q = questions[currentQuestionIndex];
+        
+        chapterLabel.innerText = q.chapter;
+        questionText.innerText = q.question;
+        optionsContainer.innerHTML = '';
+        explanationBox.style.display = 'none';
+        nextBtn.style.display = 'none';
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn option-btn';
+            btn.innerText = option;
+            btn.onclick = () => handleAnswer(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+
+        progressFill.style.width = `${(currentQuestionIndex / questions.length) * 100}%`;
+    }
+
+    function handleAnswer(selectedIndex, btn) {
+        if (answered) return;
+        answered = true;
+
+        const q = questions[currentQuestionIndex];
+        const allBtns = optionsContainer.getElementsByClassName('option-btn');
+
+        if (selectedIndex === q.correct) {
+            btn.classList.add('correct');
+            score++;
+        } else {
+            btn.classList.add('wrong');
+            allBtns[q.correct].classList.add('correct');
+        }
+
+        explanationText.innerText = q.explanation;
+        explanationBox.style.display = 'block';
+        nextBtn.style.display = 'block';
+    }
+
+    nextBtn.onclick = () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    };
+
+    function showResults() {
+        quizContent.style.display = 'none';
+        resultScreen.style.display = 'block';
+        progressFill.style.width = '100%';
+        scoreText.innerText = `You scored ${score} out of ${questions.length}!`;
+    }
+
+    // Initialize
+    loadQuestion();
+</script>
+
+</body>
+</html>
